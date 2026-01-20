@@ -1,0 +1,41 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Đơn hàng của tôi{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">📦 Đơn hàng của tôi</h2>
+
+{% if orders %}
+    {% for order in orders %}
+        <div class="card mb-3">
+            <div class="card-header">
+                <strong>Đơn #{{ order.id }}</strong>
+                | Ngày đặt: {{ order.created_at|date:"d/m/Y H:i" }}
+                | Trạng thái:
+                {% if order.status == 'pending' %}
+                    <span class="badge bg-warning text-dark">Chờ duyệt</span>
+                {% elif order.status == 'approved' %}
+                    <span class="badge bg-success">Đã duyệt</span>
+                {% else %}
+                    <span class="badge bg-danger">Từ chối</span>
+                {% endif %}
+            </div>
+
+            <div class="card-body">
+                <ul class="list-group">
+                    {% for item in order.items.all %}
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>
+                                {{ item.product.name }} × {{ item.quantity }}
+                            </span>
+                            <strong>{{ item.price }} VND</strong>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    {% endfor %}
+{% else %}
+    <p>Bạn chưa có đơn hàng nào.</p>
+{% endif %}
+{% endblock %}

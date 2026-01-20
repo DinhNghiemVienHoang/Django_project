@@ -1,0 +1,40 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Trang chủ{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Danh sách hoa 🌸</h1>
+
+<div class="row">
+    {% for product in products %}
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            {% if product.image %}
+            <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}">
+            {% endif %}
+            <div class="card-body">
+                <h5 class="card-title">{{ product.name }}</h5>
+                <p class="card-text">{{ product.description }}</p>
+                <p class="fw-bold text-danger">
+                    {{ product.price }} VND
+                </p>
+
+                {% if user.is_authenticated %}
+                    <a href="{% url 'place_order' product.id %}"
+                       class="btn btn-success">
+                        Đặt hàng
+                    </a>
+                {% else %}
+                    <a href="{% url 'login' %}"
+                       class="btn btn-outline-secondary">
+                        Đăng nhập để đặt hàng
+                     </a>
+                 {% endif %}
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <p>Chưa có sản phẩm nào.</p>
+    {% endfor %}
+</div>
+{% endblock %}
