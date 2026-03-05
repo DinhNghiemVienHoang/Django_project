@@ -5,6 +5,24 @@
 {% block content %}
 <h1 class="mb-4">Danh sách hoa 🌸</h1>
 
+<form method="GET" style="margin-bottom:20px;">
+
+    <input type="text" name="search" placeholder="Tìm hoa...">
+
+    <select name="sort">
+        <option value="">Sắp xếp</option>
+        <option value="price_asc">Giá tăng dần</option>
+        <option value="price_desc">Giá giảm dần</option>
+    </select>
+
+    <button type="submit">Tìm</button>
+
+    <a href="{% url 'home' %}" class="btn btn-secondary">
+Reset
+</a>
+
+</form>
+
 <div class="row">
     {% for product in products %}
     <div class="col-md-4 mb-4">
@@ -36,5 +54,23 @@
     {% empty %}
     <p>Chưa có sản phẩm nào.</p>
     {% endfor %}
+</div>
+
+<div class="mt-4">
+
+{% if products.has_previous %}
+<a href="?page={{ products.previous_page_number }}&search={{ request.GET.search }}&sort={{ request.GET.sort }}">
+Trang trước
+</a>
+{% endif %}
+
+<span>Trang {{ products.number }} / {{ products.paginator.num_pages }}</span>
+
+{% if products.has_next %}
+<a href="?page={{ products.next_page_number }}&search={{ request.GET.search }}&sort={{ request.GET.sort }}">
+Trang sau
+</a>
+{% endif %}
+
 </div>
 {% endblock %}

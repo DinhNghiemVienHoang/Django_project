@@ -23,12 +23,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-zacae2nmx@p06g2$55%fn#m0wqc%0ropzal%c*01(@0+c%95ks'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    '.ngrok-free.dev',
+]
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://*.railway.app',
+    'https://*.ngrok-free.dev',
 ]
 
 # Application definition

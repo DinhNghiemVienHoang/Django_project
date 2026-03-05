@@ -8,6 +8,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.db.models import Sum, F
 from .models import Order, OrderItem
 from django.views.decorators.http import require_POST
+from django.core.paginator import Paginator
 
 @staff_member_required
 @require_POST
@@ -69,9 +70,7 @@ def admin_dashboard(request):
         order__status='approved'
     ).aggregate(total=Sum('price'))['total'] or 0
 
-    recent_orders = Order.objects.annotate(
-    total_price=Sum(F('items__price') * F('items__quantity'))
-).select_related('user').order_by('-created_at')[:5]
+    recent_orders = Order.objects.select_related('user').order_by('-created_at')[:5]
 
     return render(request, 'core/admin_dashboard.html', {
         'total_orders': total_orders,
@@ -85,6 +84,23 @@ def admin_dashboard(request):
 
 def home(request):
     products = Product.objects.all()
+
+    search = request.GET.get('search')
+    sort = request.GET.get('sort')
+
+    if search:
+        products = products.filter(name__icontains=search)
+
+    if sort == 'price_asc':
+        products = products.order_by('price')
+
+    if sort == 'price_desc':
+        products = products.order_by('-price')
+
+    paginator = Paginator(products, 6)
+    page_number = request.GET.get('page')
+    products = paginator.get_page(page_number)    
+
     return render(request, 'core/home.html', {'products': products})
 
 
