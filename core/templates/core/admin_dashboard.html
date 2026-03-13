@@ -45,7 +45,7 @@
 <div class="card mt-4">
     <div class="card-body">
         <h5>💰 Tổng doanh thu (đơn đã duyệt)</h5>
-        <h3 class="text-success">{{ total_revenue }} VND</h3>
+        <h3 class="text-success">{{ total_revenue|floatformat:0 }} VND</h3>
     </div>
 </div>
 <div class="card mt-4">
@@ -66,57 +66,111 @@
                 </tr>
             </thead>
             <tbody>
-                {% for order in recent_orders %}
-                <th class="text-center">Hành động</th>
-                <td class="text-center">
-                  {% if order.status == 'pending' %}
-                    <form method="post" action="{% url 'approve_order' order.id %}" class="d-inline">
-                      {% csrf_token %}
-                      <button class="btn btn-sm btn-success"
-                              onclick="return confirm('Duyệt đơn này?')">
-                        ✔ Duyệt
-                      </button>
-                    </form>
+{% for order in orders %}
+<tr>
+    <td>{{ order.id }}</td>
+    <td>{{ order.user.username }}</td>
+    <td>{{ order.created_at|date:"d/m/Y H:i" }}</td>
 
-                    <form method="post" action="{% url 'reject_order' order.id %}" class="d-inline">
-                      {% csrf_token %}
-                      <button class="btn btn-sm btn-danger"
-                              onclick="return confirm('Từ chối đơn này?')">
-                        ✖ Từ chối
-                      </button>
-                    </form>
-                  {% else %}
-                    <span class="text-muted">—</span>
-                  {% endif %}
-                </td>
-                
-                <tr>
-                    <td>#{{ order.id }}</td>
-                    <td>{{ order.user.username }}</td>
-                    <td>{{ order.created_at|date:"d/m/Y H:i" }}</td>
-                    <td>
-                        {% if order.status == 'pending' %}
-                            <span class="badge bg-warning text-dark">Chờ duyệt</span>
-                        {% elif order.status == 'approved' %}
-                            <span class="badge bg-success">Đã duyệt</span>
-                        {% else %}
-                            <span class="badge bg-danger">Từ chối</span>
-                        {% endif %}
-                    </td>
-                    <td class="text-end fw-bold">
-                        {{ order.total_price|floatformat:0 }} VND
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="5" class="text-center text-muted">
-                        Chưa có đơn hàng nào
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
+    <td>
+        {% if order.status == 'pending' %}
+            <span class="badge bg-warning text-dark">Chờ duyệt</span>
+        {% elif order.status == 'approved' %}
+            <span class="badge bg-success">Đã duyệt</span>
+        {% else %}
+            <span class="badge bg-danger">Từ chối</span>
+        {% endif %}
+    </td>
+
+    <td class="text-end fw-bold">
+        {{ order.total_price|floatformat:0 }} VND
+    </td>
+
+    <td class="text-center">
+        {% if order.status == 'pending' %}
+
+        <form method="post" action="{% url 'approve_order' order.id %}" class="d-inline">
+            {% csrf_token %}
+            <button class="btn btn-sm btn-success">✔ Duyệt</button>
+        </form>
+
+        <form method="post" action="{% url 'reject_order' order.id %}" class="d-inline">
+            {% csrf_token %}
+            <button class="btn btn-sm btn-danger">✖ Từ chối</button>
+        </form>
+
+        {% else %}
+        <span class="text-muted">—</span>
+        {% endif %}
+    </td>
+
+</tr>
+{% empty %}
+<tr>
+<td colspan="6" class="text-center text-muted">
+Chưa có đơn hàng nào
+</td>
+</tr>
+{% endfor %}
+</tbody>
         </table>
     </div>
 </div>
+
+<!-- BIỂU ĐỒ -->
+<h3 class="mt-4">Thống kê đơn hàng</h3>
+<canvas id="orderChart"></canvas>
+
+<h3 class="mt-4">Doanh thu theo tháng</h3>
+<canvas id="revenueChart"></canvas>
+
+<h3 class="mt-4">Top 5 sản phẩm bán chạy</h3>
+<canvas id="productChart"></canvas>
+
+<script>
+const orderChart = new Chart(
+    document.getElementById('orderChart'),
+    {
+        type: 'pie',
+        data: {
+            labels: ['Pending', 'Approved', 'Rejected'],
+            datasets: [{
+                data: [{{ pending }}, {{ approved }}, {{ rejected }}],
+                backgroundColor: ['#ffc107','#28a745','#dc3545']
+            }]
+        }
+    }
+);
+
+const revenueChart = new Chart(
+    document.getElementById('revenueChart'),
+    {
+        type: 'bar',
+        data: {
+            labels: {{ months|safe }},
+            datasets: [{
+                label: 'Doanh thu',
+                data: {{ revenues|safe }},
+                backgroundColor: '#2e8b57'
+            }]
+        }
+    }
+);
+
+const productChart = new Chart(
+    document.getElementById('productChart'),
+    {
+        type: 'bar',
+        data: {
+            labels: {{ product_names|safe }},
+            datasets: [{
+                label: 'Số lượng bán',
+                data: {{ product_sales|safe }},
+                backgroundColor: '#ff6384'
+            }]
+        }
+    }
+);
+</script>
 
 {% endblock %}

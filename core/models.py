@@ -35,12 +35,23 @@ class Order(models.Model):
         ('rejected', 'Rejected'),
     )
 
+    PAYMENT_CHOICES = (
+        ('cod', 'Thanh toán khi nhận hàng'),
+        ('bank', 'Chuyển khoản ngân hàng'),
+    )
+
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     status = models.CharField(
         max_length=20,
         choices=STATUS_CHOICES,
         default='pending'
+    )
+
+    payment_method = models.CharField(
+        max_length=10,
+        choices=PAYMENT_CHOICES,
+        default='cod'
     )
 
     total_price = models.DecimalField(
@@ -65,3 +76,11 @@ class OrderItem(models.Model):
 
     def __str__(self):
         return f"{self.product.name} x {self.quantity}"
+
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    phone = models.CharField(max_length=20)
+    address = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.user.username

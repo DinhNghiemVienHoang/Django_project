@@ -82,19 +82,71 @@ Dự án sử dụng template inheritance:
 
 Cách làm này giúp giảm trùng lặp code và dễ bảo trì.
 
-## 9. Hướng dẫn chạy thử chương trình
+## 9. Phân quyền người dùng
+
+Hệ thống phân quyền thành 3 vai trò:
+
+- Guest (khách): 
+  - Xem danh sách sản phẩm
+
+- User (người dùng đã đăng nhập):
+  - Đặt hàng
+  - Xem đơn hàng của mình
+
+- Admin (quản trị viên):
+  - Quản lý sản phẩm
+  - Quản lý danh mục
+  - Duyệt / từ chối đơn hàng
+  - Xem thống kê đơn hàng và doanh thu
+
+## 10. Luồng xử lý đặt hàng
+
+1. Người dùng đăng nhập hệ thống
+2. Người dùng chọn sản phẩm
+3. Nhấn nút "Đặt hàng"
+4. Hệ thống tạo đơn hàng với trạng thái "pending"
+5. Quản trị viên đăng nhập trang quản trị
+6. Admin duyệt hoặc từ chối đơn hàng
+7. Trạng thái đơn hàng được cập nhật:
+   - pending
+   - approved
+   - rejected
+
+## 11. Bảo mật hệ thống
+
+Hệ thống sử dụng file .env để lưu các biến môi trường như SECRET_KEY và DEBUG nhằm tăng cường bảo mật và tách cấu hình khỏi mã nguồn.
+
+## 12. Kiểm thử hệ thống
+
+Các chức năng chính đã được kiểm thử thủ công:
+
+- Đăng ký tài khoản
+- Đăng nhập / đăng xuất
+- Xem danh sách sản phẩm
+- Tìm kiếm và sắp xếp sản phẩm
+- Đặt hàng
+- Xem đơn hàng của người dùng
+- Duyệt / từ chối đơn hàng trong trang quản trị
+- Hiển thị thống kê đơn hàng
+
+Kết quả: Các chức năng hoạt động đúng theo yêu cầu.
+
+## 13. Hướng dẫn chạy thử chương trình
 
 ### Bước 1: Cài đặt thư viện
-```bash
 pip install -r requirements.txt
-Bước 2: Khởi tạo cơ sở dữ liệu
-bash
-Sao chép mã
+### Bước 2: Khởi tạo cơ sở dữ liệu
 python manage.py migrate
-Bước 3: Chạy chương trình
-bash
-Sao chép mã
+### Bước 3: Chạy chương trình
 python manage.py runserver
-Bước 4: Truy cập hệ thống
+### Bước 4: Truy cập hệ thống
 Website: http://127.0.0.1:8000/
 Trang quản trị: http://127.0.0.1:8000/admin/
+
+## 14. Tài Khoản demo
+Admin: 
+username: admin
+password: duanhoa123
+User:
+username: Duong_Em
+password: duanhoa123

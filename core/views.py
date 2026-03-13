@@ -3,12 +3,14 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .models import Product, Order, OrderItem
 from django.contrib.admin.views.decorators import staff_member_required
-from django.db.models import Sum, F
-from .models import Order, OrderItem
 from django.views.decorators.http import require_POST
+
+from django.db.models import Sum, F
+from django.db.models.functions import TruncMonth
 from django.core.paginator import Paginator
+
+from .models import Product, Order, OrderItem, UserProfile
 
 @staff_member_required
 @require_POST
@@ -108,6 +110,8 @@ def register(request):
     if request.method == 'POST':
         username = request.POST['username']
         email = request.POST['email']
+        phone = request.POST['phone']
+        address = request.POST['address']
         password1 = request.POST['password1']
         password2 = request.POST['password2']
 
@@ -124,7 +128,14 @@ def register(request):
             email=email,
             password=password1
         )
+
         user.save()
+
+        UserProfile.objects.create(
+            user=user,
+            phone=phone,
+            address=address
+        )
         messages.success(request, 'Đăng ký thành công, hãy đăng nhập')
         return redirect('login')
 
@@ -153,21 +164,35 @@ def user_logout(request):
 @login_required
 def place_order(request, product_id):
     product = get_object_or_404(Product, id=product_id)
+    payment_method = request.POST.get("payment_method")
 
     order = Order.objects.create(
-        user=request.user,
-        status='pending'
-    )
+    user=request.user,
+    status='pending',
+    payment_method=payment_method
+)
 
-    OrderItem.objects.create(
+    order_item = OrderItem.objects.create(
         order=order,
         product=product,
         quantity=1,
         price=product.price
-    )
+)
+
+    order.total_price = order_item.price * order_item.quantity
+    order.save()
 
     messages.success(request, 'Đặt hàng thành công! Đơn hàng đang chờ duyệt.')
     return redirect('home')
+
+@login_required
+def order_detail(request, order_id):
+
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+
+    return render(request, 'core/order_detail.html', {
+        'order': order
+    })
 
 @login_required
 def my_orders(request):
@@ -176,3 +201,65 @@ def my_orders(request):
         'orders': orders
     })
 
+def admin_dashboard(request):
+
+    total_orders = Order.objects.count()
+
+    total_revenue = Order.objects.filter(status='approved').aggregate(
+    total=Sum('total_price')
+)['total'] or 0
+
+    pending_count = Order.objects.filter(status='pending').count()
+    approved_count = Order.objects.filter(status='approved').count()
+    rejected_count = Order.objects.filter(status='rejected').count()
+
+    orders = Order.objects.order_by('-created_at')[:10]
+
+    revenue_by_month = (
+        Order.objects.filter(status='approved')
+        .annotate(month=TruncMonth('created_at'))
+        .values('month')
+        .annotate(total=Sum('total_price'))
+        .order_by('month')
+    )
+
+    months = []
+    revenues = []
+
+    for item in revenue_by_month:
+        months.append(item['month'].strftime("%m-%Y"))
+        revenues.append(float(item['total']))
+
+    top_products = (
+        OrderItem.objects
+        .values('product__name')
+        .annotate(total_sold=Sum('quantity'))
+        .order_by('-total_sold')[:5]
+
+)
+
+    product_names = []
+    product_sales = []
+
+    for item in top_products:
+        product_names.append(item['product__name'])
+        product_sales.append(item['total_sold'])
+
+    context = {
+        "orders": orders,
+
+        "total_orders": total_orders,
+        "total_revenue": total_revenue,
+
+        "pending": pending_count,
+        "approved": approved_count,
+        "rejected": rejected_count,
+
+        "months": months,
+        "revenues": revenues,
+
+        "product_names": product_names,
+        "product_sales": product_sales,
+}
+
+    return render(request, "core/admin_dashboard.html", context)

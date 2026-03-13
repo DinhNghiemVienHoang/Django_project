@@ -10,7 +10,17 @@
         <div class="card mb-3">
             <div class="card-header">
                 <strong>Đơn #{{ order.id }}</strong>
+                <a href="{% url 'order_detail' order.id %}"
+                class="btn btn-sm btn-outline-primary float-end">
+                Chi tiết
+                </a>
                 | Ngày đặt: {{ order.created_at|date:"d/m/Y H:i" }}
+                | Thanh toán:
+                {% if order.payment_method == "cod" %}
+                    <span class="badge bg-warning text-dark">COD</span>
+                {% else %}
+                    <span class="badge bg-info">Chuyển khoản</span>
+                {% endif %}
                 | Trạng thái:
                 {% if order.status == 'pending' %}
                     <span class="badge bg-warning text-dark">Chờ duyệt</span>

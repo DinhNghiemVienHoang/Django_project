@@ -36,18 +36,35 @@ Reset
                 <p class="fw-bold text-danger">
                     {{ product.price }} VND
                 </p>
-
+                
                 {% if user.is_authenticated %}
-                    <a href="{% url 'place_order' product.id %}"
-                       class="btn btn-success">
-                        Đặt hàng
-                    </a>
+                <form method="POST" action="{% url 'place_order' product.id %}">
+                {% csrf_token %}
+
+                <select name="payment_method" class="form-select mb-2">
+
+                <option value="cod">
+                    Thanh toán khi nhận hàng (COD)
+                </option>
+
+                <option value="bank">
+                    Chuyển khoản ngân hàng
+                </option>
+
+                </select>
+
+                <button type="submit" class="btn btn-success">
+                    Đặt hàng
+                </button>
+
+                </form>
+
                 {% else %}
-                    <a href="{% url 'login' %}"
-                       class="btn btn-outline-secondary">
-                        Đăng nhập để đặt hàng
-                     </a>
-                 {% endif %}
+            <a href="{% url 'login' %}"
+                class="btn btn-outline-secondary">
+                    Đăng nhập để đặt hàng
+            </a>
+                {% endif %}
             </div>
         </div>
     </div>
